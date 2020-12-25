@@ -23,10 +23,10 @@ const entityQueryUrl = url + entitySearchParams.toString();
 const claimSearchParams = new URLSearchParams(claimQuery);
 const claimQueryUrl = url + claimSearchParams.toString();
 
-// fetch(entityQueryUrl)
-//   .then(response => response.json()
-//     .then(data => printEntity(data))
-//   );
+fetch(entityQueryUrl)
+  .then(response => response.json()
+    .then(data => printEntity(data))
+  );
 
 function printEntity(data) {
   console.log(data['entities'][entityId]);
@@ -36,11 +36,11 @@ function printClaim(data) {
   console.log(data['claims'][propertyId][0]['mainsnak']);
 }
 
-fetch("http://search.people.cn/api-search/elasticSearch/search", {
-  headers: {'Content-Type': 'application/json;charset=UTF-8'},
-  method: 'POST',
-  body: '{"key":"大选","page":1,"limit":20,"hasTitle":true,"hasContent":true,"isFuzzy":true,"type":7,"domain":"world.people.com.cn","sortType":2,"startTime":0,"endTime":0}'
-})
-  .then(response => response.json()
-    .then(data => console.log(data))
-  );
+// fetch("http://search.people.cn/api-search/elasticSearch/search", {
+//   headers: {'Content-Type': 'application/json;charset=UTF-8'},
+//   method: 'POST',
+//   body: '{"key":"大选","page":1,"limit":20,"hasTitle":true,"hasContent":true,"isFuzzy":true,"type":7,"domain":"world.people.com.cn","sortType":2,"startTime":0,"endTime":0}'
+// })
+//   .then(response => response.json()
+//     .then(data => console.log(data))
+//   );
