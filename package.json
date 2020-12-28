@@ -11,6 +11,7 @@
   "dependencies": {
     "d3": "^5.16.0",
     "express": "^4.17.1",
+    "md5": "^2.3.0",
     "node-fetch": "^2.6.1",
     "node-html-parser": "^2.0.0",
     "wikidata-taxonomy": "^0.6.7",
