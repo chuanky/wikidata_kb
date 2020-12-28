@@ -16,7 +16,7 @@ var index = 0;
 // readline读到一个\n或\r之后的操作，line是读到\n或\r之前的所有内容
 rl.on('line', (line) => {
   lineNo++;
-  if (lineNo <= 2) {
+  if (lineNo <= 10) {
     os.write(line);
     index += line.length
     try {
