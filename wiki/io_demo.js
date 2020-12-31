@@ -1,59 +1,65 @@
 const fs = require('fs');
 const readline = require('readline');
 
-const LANGUAGES = {'zh': 1, 'zh-hant': 2, 'en': 3, 'ru': 4, 'ja': 5};
+const LANGUAGES = {'zh-hans': 1, 'zh-hant': 2, 'en': 3, 'ru': 4, 'ja': 5};
 const LANGUAGES_SITE = {'zhwiki': 1, 'zh_yuewiki': 2, 'enwiki': 3, 'ruwiki': 4, 'jawiki': 5};
-const CLAIMS_PEOPLE = {
+const CLAIMS = {
+  // for classification
+  'P279': 'subclass of', 
+  // for person
   'P18': 'image',
   'P27': 'country of citizenship', 
   'P31': 'instance of',
+  'P36': 'capital',   // 如果地点是国家，需要找到该国家首都
   'P39': 'position held',
   'P102': 'member of political party',
-  'P569': 'date of birth'
-}
-// TODO: level、parentId、category？
-const CLAIMS_LOCATION = {
+  'P569': 'date of birth',
+  // for location
   'P17': 'country',   // 属于哪个国家
-  'P18': 'image',
-  'P31': 'instance of',
-  'P36': 'capital',   // 如果地点是国家，需要找到该国家首都
   'P625': 'coordinate location',
   'P1448': 'official name',
+  // for organization
 }
+
+// TODO: location: level、parentId、category？
 
 
 class EntityProcessor {
 
   constructor() {
     this.rl = readline.createInterface({
-      input: fs.createReadStream('../data/10.json'),
-      // input: fs.createReadStream('E:/bzip2/latest-all.json', {start: 0}),   // 可以通过修改start的数值来指定读取位置
+      // input: fs.createReadStream('../data/10.json'),
+      input: fs.createReadStream('E:/bzip2/latest-all.json', {start: 0}),   // 可以通过修改start的数值来指定读取位置
       crlfDelay: Infinity
     });
     this.os = fs.createWriteStream('../data/output');
     
     this.lineNo = 0;
     this.index = 0;
+    this.targetlineNo = 1001;
   }
   
   process() {
     // 'line' event: readline读到一个\n或\r之后的操作，line是读到\n或\r之前的所有内容
     this.rl.on('line', (line) => {
       this.lineNo++;
-      if (this.lineNo <= 10) {
-        // os.write(line);
+      if (this.lineNo <= this.targetlineNo) {
         this.index += line.length
         try {
-          // console.log(JSON.parse(line.slice(0, -1)))
-          var jsonObj = JSON.parse(line)
-          var result = this.languageFilter(jsonObj[0]);
-          console.log(result)
+          var entity = JSON.parse(line.slice(0, -1));
+          let result = this.languageFilter(entity);
+          this.os.write(JSON.stringify(result) + '\n');
+          // var entities = JSON.parse(line)
+          // for (let entity of entities) {
+          //   let result = this.languageFilter(entity);
+          //   this.os.write(JSON.stringify(result) + '\n');
+          // }
         } catch (e) {
           console.log('JSON Parsing Error!')
           console.log(e)
         }
       } else {
-        rl.close();
+        this.rl.close();
       }
     });
 
@@ -65,6 +71,7 @@ class EntityProcessor {
     });
     
     this.os.on('close', () =>  {
+      // TODO: 添加一个计时器
       console.log("output file write finished");
     });
   }
@@ -107,7 +114,7 @@ class EntityProcessor {
   claimFilter(claims) {
     var result = {};
 
-    for (let claim of Object.keys(CLAIMS_LOCATION)) {
+    for (let claim of Object.keys(CLAIMS)) {
       result[claim] = claims[claim];
     }
 
@@ -130,9 +137,28 @@ function claimFilterTest() {
   });
 
   rl.on('close', () => {
-    console.log('file read finished');
+    console.log('file read finished; claimFilter test done;');
+  });
+}
+
+function languageFilterTest() {
+  const rl = readline.createInterface({
+    input: fs.createReadStream('../data/10.json'),
+    crlfDelay: Infinity
+  });
+
+  rl.on('line', (line) => {
+    let jsonObj = JSON.parse(line);
+    const entityProcessor = new EntityProcessor();
+    let targetEntity = entityProcessor.languageFilter(jsonObj[0]);
+    console.log(targetEntity);
+  });
+
+  rl.on('close', () => {
+    console.log('file read finished; languageFilter test done');
   });
 }
 
 // claimFilterTest()
+// languageFilterTest()
 new EntityProcessor().process()
