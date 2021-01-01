@@ -1,4 +1,9 @@
-output
+# output file
+output-2020-12-28.json
+error-2020-12-28.json
+error.jl
+
+# mac system file
 .DS_Store
 
 # Logs
