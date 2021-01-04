@@ -1,4 +1,3 @@
-const EventEmitter = require('events');
 const fs = require('fs');
 
 module.exports = class JSONUtil {
@@ -28,19 +27,17 @@ module.exports = class JSONUtil {
   }
 
   static loadSubclasses(filePath, result, emitter) {
+    console.log(`loading... ${filePath}`)
     fs.readFile(filePath, (err, data) => {
       let subclasses = JSON.parse(data);
       //TODO: Use MapReduce
-      // Object.keys(subclasses).map((key) => {
-      //   console.log(subclasses[key])
-      // });
       for (let subclass of subclasses) {
         let id = String(subclass['item']).split('/').slice(-1).pop();
         let label = subclass['itemLabel'];
         result[id] = label;
       }
-    
-      emitter.emit('loadFinished')
+      console.log(`${filePath} loaded`)
+      emitter.emit('loadFinished');
     });
   }
 }

@@ -132,20 +132,4 @@ class PropertyProcessor {
   }
 }
 
-const rl = readline.createInterface({
-  input: fs.createReadStream('../data/output-2020-12-28.jl'),
-});
 
-var count = 0;
-
-rl.on('line', (line) => {
-  count++;
-  if (count < 200) {
-    let entity = JSON.parse(line);
-    if (Classifier.isPerson(entity)) {
-      console.log(`${entity['id']}: ${entity['labels']['en']['value']}`);
-    }
-  } else {
-    rl.close();
-  }
-});

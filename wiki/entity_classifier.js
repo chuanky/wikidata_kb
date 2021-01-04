@@ -16,8 +16,21 @@ module.exports = class EntityClassifier {
     return false;
   }
 
-  static isOrganization(entity) {
-    //TODO: 搜索所有instance of包括government_agency_subclasses.json的实体
+  /**
+   * 判断一个实体是否为组织
+   * @param {any} entity wikidata entity，格式：{'id': 'Qxxx', 'labels': {...} ...}
+   * @param {any} classes 所属类别，格式：{QXXXXX: 'government agency', QXXXXX: 'space agency'...}
+   */
+  static isOrganization(entity, classes) {
+    let instances = entity['claims']['P31'];
+    if (!instances) return false;
+
+    for (let instance of instances) {
+      let id = instance['mainsnak']['datavalue']['value']['id'];
+      if (classes[id]) {
+        return true;
+      }
+    }
   }
 
   static isLocation(entity) {
