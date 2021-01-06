@@ -4,7 +4,7 @@ const EventEmitter = require('events')
 const EntityClassifier = require('../wiki/entity_classifier')
 const JSONUtil = require('../util/json_util')
 const Entity = require('../wiki/entity')
-
+const WikiURL = require('../wiki/wikiURL')
 
 class EntityClassifierTest {
   
@@ -21,7 +21,15 @@ class EntityClassifierTest {
       if (count < 200) {
         let entity = JSON.parse(line);
         if (EntityClassifier.isPerson(entity)) {
-          console.log(`${entity['id']}: ${entity['labels']['en']['value']}`);
+          // console.log(`${entity['id']}: ${entity['labels']['en']['value']}`);
+          let enwiki = entity['sitelinks']['enwiki'];
+          if (enwiki) {
+            let wiki_title = WikiURL.getURLTitle('http://en.wikipedia.org/wiki/George_Washington');
+            if (entity['sitelinks']['enwiki']['title'] == wiki_title) {
+              console.log(`${entity['id']}: ${entity['sitelinks']['enwiki']['title']}`);
+              console.log(entity['descriptions']['en'])
+            }
+          }
         }
       } else {
         this.rl.close();
@@ -43,16 +51,28 @@ class EntityClassifierTest {
       }
     });
   }
+
+  isLocationTest(classes) {
+    var count = 0;
+    this.rl.on('line', (line) => {
+      count++;
+      if (count < 10000) {
+        let entity = JSON.parse(line);
+        if (EntityClassifier.isOrganization(entity, classes)) {
+          console.log(Entity.getLabel(entity))
+        }
+      } else {
+        this.rl.close();
+      }
+    });
+  }
 }
 
-// new EntityClassifierTest().isPersionTest();
+let gov_agencies = JSONUtil.loadSubclassesSync('../data/government_agency.json');
+let locations = JSONUtil.loadSubclassesSync('../data/locality.json');
 
-var classes = {}
-const fileLoaderEmitter = new EventEmitter();
+let test = new EntityClassifierTest();
+// test.isOrganizationTest(gov_agencies);
+test.isLocationTest(locations);
 
-JSONUtil.loadSubclasses('../data/government_agency_subclasses.json', classes, fileLoaderEmitter);
-
-fileLoaderEmitter.on('loadFinished', () => {
-  new EntityClassifierTest().isOrganizationTest(classes)
-});
 

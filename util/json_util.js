@@ -1,4 +1,5 @@
 const fs = require('fs');
+const readline = require('readline')
 
 module.exports = class JSONUtil {
 
@@ -40,5 +41,39 @@ module.exports = class JSONUtil {
       emitter.emit('loadFinished');
     });
   }
-}
 
+  static loadSubclassesSync(filePath) {
+    console.log(`loading... ${filePath}`);
+    var result = {};
+    let data = fs.readFileSync(filePath);
+
+    let subclasses = JSON.parse(data);
+    for (let subclass of subclasses) {
+      let id = String(subclass['item']).split('/').slice(-1).pop();
+      let label = subclass['itemLabel'];
+      result[id] = label;
+    }
+    console.log(`${filePath} loaded`)
+    return result;
+  }
+
+  static removeDuplicates(jlFilePath) {
+    let os = fs.createWriteStream(jlFilePath + '_unique');
+    let rl = readline.createInterface({
+      input: fs.createReadStream(jlFilePath)
+    })
+    
+    var unique = {}
+    rl.on('line', (line) => {
+      let entity = JSON.parse(line);
+      if (!unique[entity['id']]) {
+        unique[entity['id']] = true;
+        os.write(JSON.stringify(entity) + '\n');
+      }
+    })
+
+    rl.on('close', () => {
+      console.log('unique filter finished')
+    })
+  }
+}

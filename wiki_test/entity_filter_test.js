@@ -11,14 +11,16 @@ function claimFilterTest() {
 
   rl.on('line', (line) => {
     let jsonObj = JSON.parse(line);
-    let targetClaims = EntityFilter.claimFilter(jsonObj[0]['claims']);
-    console.log(targetClaims);
+    let targetClaims = EntityFilter.claimFilter(jsonObj[2]['claims']);
+    console.log(targetClaims['P39'][0]['mainsnak']);
   });
 
   rl.on('close', () => {
     console.log('file read finished; claimFilter test done;');
   });
 }
+
+claimFilterTest();
 
 function languageFilterTest() {
   const rl = readline.createInterface({
@@ -27,9 +29,11 @@ function languageFilterTest() {
   });
 
   rl.on('line', (line) => {
-    let jsonObj = JSON.parse(line);
-    let targetEntity = EntityFilter.languageFilter(jsonObj[0]);
-    console.log(targetEntity);
+    let entities = JSON.parse(line);
+    for (let entity of entities) {
+      let targetEntity = EntityFilter.languageFilter(entity);
+      console.log(targetEntity['sitelinks']);
+    }
   });
 
   rl.on('close', () => {
