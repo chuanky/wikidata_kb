@@ -7,25 +7,11 @@ module.exports = class EntityClassifier {
 
   constructor() {
     this.os_err = fs.createWriteStream('../data/classifier_err.jl');
+    this.errors = {}
   }
   
   isPerson(entity) {
-    let instances = entity['claims']['P31'];
-    if (!instances) return false;
-  
-    for (let instance of instances) {
-      try {
-        if (instance['mainsnak']['datavalue']['value']['id'] == 'Q5') {
-          return true;
-        }
-      } catch (e) {
-        console.log(e);
-        console.log(entity);
-        this.os_err.write(JSON.stringify(entity) + '\n');
-      }
-    }
-  
-    return false;
+    return this.inClasses(entity, {"Q5": "human"})
   }
 
   /**
@@ -52,11 +38,18 @@ module.exports = class EntityClassifier {
           return true;
         }
       } catch(e) {
-        console.log(e);
-        console.log(entity);
-        this.os_err.write(JSON.stringify(entity) + '\n');
+        this.logError(entity)
       }
     }
   }
 
+  logError(entity) {
+    let id = this.errors.entity['id'];
+    if (!id) {
+      this.errors[id] = true;
+      console.log(e);
+      console.log(entity);
+      this.os_err.write(JSON.stringify(entity) + '\n');
+    }
+  }
 }

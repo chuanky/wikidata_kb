@@ -12,6 +12,7 @@ class EntityClassifierTest {
     this.rl = readline.createInterface({
       input: fs.createReadStream('../data/output-2020-12-28.jl'),
     });
+    this.classifier = new EntityClassifier();
   }
 
   isPersionTest() {
@@ -20,16 +21,16 @@ class EntityClassifierTest {
       count++;
       if (count < 200) {
         let entity = JSON.parse(line);
-        if (EntityClassifier.isPerson(entity)) {
-          // console.log(`${entity['id']}: ${entity['labels']['en']['value']}`);
-          let enwiki = entity['sitelinks']['enwiki'];
-          if (enwiki) {
-            let wiki_title = WikiURL.getURLTitle('http://en.wikipedia.org/wiki/George_Washington');
-            if (entity['sitelinks']['enwiki']['title'] == wiki_title) {
-              console.log(`${entity['id']}: ${entity['sitelinks']['enwiki']['title']}`);
-              console.log(entity['descriptions']['en'])
-            }
-          }
+        if (this.classifier.isPerson(entity)) {
+          console.log(`${entity['id']}: ${entity['labels']['en']['value']}`);
+          // let enwiki = entity['sitelinks']['enwiki'];
+          // if (enwiki) {
+          //   let wiki_title = WikiURL.getURLTitle('http://en.wikipedia.org/wiki/George_Washington');
+          //   if (entity['sitelinks']['enwiki']['title'] == wiki_title) {
+          //     console.log(`${entity['id']}: ${entity['sitelinks']['enwiki']['title']}`);
+          //     console.log(entity['descriptions']['en'])
+          //   }
+          // }
         }
       } else {
         this.rl.close();
@@ -43,7 +44,7 @@ class EntityClassifierTest {
       count++;
       if (count < 10000) {
         let entity = JSON.parse(line);
-        if (EntityClassifier.isOrganization(entity, classes)) {
+        if (this.classifier.isOrganization(entity, classes)) {
           console.log(Entity.getLabel(entity))
         }
       } else {
@@ -58,7 +59,7 @@ class EntityClassifierTest {
       count++;
       if (count < 10000) {
         let entity = JSON.parse(line);
-        if (EntityClassifier.isOrganization(entity, classes)) {
+        if (this.classifier.isOrganization(entity, classes)) {
           console.log(Entity.getLabel(entity))
         }
       } else {
@@ -72,7 +73,9 @@ let gov_agencies = JSONUtil.loadSubclassesSync('../data/government_agency.json')
 let locations = JSONUtil.loadSubclassesSync('../data/locality.json');
 
 let test = new EntityClassifierTest();
+test.isPersionTest();
 // test.isOrganizationTest(gov_agencies);
-test.isLocationTest(locations);
+// test.isLocationTest(locations);
+
 
 
