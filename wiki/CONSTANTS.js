@@ -20,5 +20,23 @@ module.exports = class CONSTANTS {
     'P625': 'coordinate location',  // l, o: longitude, longitudeFloat, latitude, latitudeFloat
     'P1448': 'official name', // l: ancestorNames
   }
+
+  static NAME_FIELDS = `name_en,name_zh,name_zf,name_ru,name_ja`;
+  static TITLE_FIELDS = `wpurl_en,wpurl_zh,wpurl_zf,wpurl_ru,wpurl_ja`;
+
+  static PERSON_FIELDS = `
+    id, 
+    countryId, 
+    ${this.NAME_FIELDS},
+    jobTitle_en,jobTitle_zh,
+    birthday,
+    photoUrl,
+    ${this.TITLE_FIELDS},
+    partyName,
+    description,
+    aliases,
+    sourceTag,
+    updateTime
+  `
 }
 

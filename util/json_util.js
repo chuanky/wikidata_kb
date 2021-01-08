@@ -1,6 +1,9 @@
 const fs = require('fs');
 const readline = require('readline')
 
+/**
+ * 主要用于wikidata json和jl文件
+ */
 module.exports = class JSONUtil {
 
   /**
@@ -27,18 +30,43 @@ module.exports = class JSONUtil {
     });
   }
 
-  static loadSubclasses(filePath, result, emitter) {
-    console.log(`loading... ${filePath}`)
-    fs.readFile(filePath, (err, data) => {
-      let subclasses = JSON.parse(data);
-      //TODO: Use MapReduce
-      for (let subclass of subclasses) {
-        let id = String(subclass['item']).split('/').slice(-1).pop();
-        let label = subclass['itemLabel'];
-        result[id] = label;
+  /**
+   * 从jl文件中读取lineNums行，适用于大文件
+   * @param {String} jlFilePath jl文件路径
+   * @param {Number} lineNums 需要读取行数
+   */
+  static readJL(jlFilePath, lineNums) {
+    const rl = readline.createInterface({
+      input: fs.createReadStream(jlFilePath)
+    })
+
+    var counter = 0;
+    rl.on('line', (line) => {
+      counter++;
+      if (counter < lineNums) {
+        let entity = JSON.parse(line);
+        console.log(entity['labels']);
+      } else {
+        rl.close();
       }
-      console.log(`${filePath} loaded`)
-      emitter.emit('loadFinished');
+    });
+  }
+
+  static loadSubclasses(filePath) {
+    console.log(`loading... ${filePath}`)
+    var result = {};
+    return new Promise((resolve, reject) => {
+      fs.readFile(filePath, (err, data) => {
+        let subclasses = JSON.parse(data);
+        //TODO: Use MapReduce
+        for (let subclass of subclasses) {
+          let id = String(subclass['item']).split('/').slice(-1).pop();
+          let label = subclass['itemLabel'];
+          result[id] = label;
+        }
+        console.log(`${filePath} loaded`);
+        resolve(result);
+      });
     });
   }
 
@@ -76,4 +104,6 @@ module.exports = class JSONUtil {
       console.log('unique filter finished')
     })
   }
+
+  
 }

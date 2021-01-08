@@ -4,9 +4,16 @@ module.exports = class WikiURL {
    * @param {String} url 数据库中的维基url
    */
   static getURLTitle(url) {
-    let uri = decodeURI(url);
-    let wiki_title = uri.split('/wiki/').slice(-1).pop().replace(/_/g, ' ');
+    if (!url | url == '') return '';
 
-    return wiki_title;
+    try {
+      let uri = decodeURI(url);
+      let wiki_title = uri.split('/wiki/').slice(-1).pop().replace(/_/g, ' ');
+      return wiki_title;
+    } catch(e) {
+      console.log(`URI decoding error: ${url}`);
+    }
+    
+    return '';
   }
 }
