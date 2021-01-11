@@ -6,6 +6,14 @@ const EntityClassifier = require('../wiki/entity_classifier')
  * 从wikidata jl格式文件中筛选出person、organization和location
  * 数据分别输出到三个jl文件当中
  * 分类报错的实体数据写入classifier_err.jl文件中
+ * wikidata类相关信息可以由https://query.wikidata.org/获取
+ * 样例SPARQL，获取'legal form'类及其子类的id和label：
+    SELECT ?item ?itemLabel 
+    WHERE 
+    {
+      ?item wdt:P279* wd:Q12047392.
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+    }
  */
 
 // load classes resources

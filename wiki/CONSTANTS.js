@@ -38,5 +38,25 @@ module.exports = class CONSTANTS {
     sourceTag,
     updateTime
   `
+
+  static ORG_FIELDS = `
+    id,
+    ${this.NAME_FIELDS},
+    countryId,
+    ${this.TITLE_FIELDS},
+    description,
+    longitude,
+    latitude,
+    foundingDate,
+    founderId,
+    founderName_en,
+    founderName_zh,
+    leaderId,
+    leaderName_en,
+    leaderName_zh,
+    aliases,
+    sourceTag,
+    photoUrl
+  `
 }
 

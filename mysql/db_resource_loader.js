@@ -3,7 +3,7 @@ var fs = require('fs')
 var WikiURL = require('../wiki/wikiURL')
 const {PERSON_FIELDS, NAME_FIELDS, TITLE_FIELDS} = require('../wiki/CONSTANTS')
 
-class DBResourceLoader {
+module.exports = class DBResourceLoader {
 
   constructor() {
     this.con = mysql.createConnection({
@@ -40,21 +40,20 @@ class DBResourceLoader {
       this.con.end();
     });
   }
-
-  loadTargetFields(fields, table) {
-    let sql = `SELECT ${fields} FROM ${table} LIMIT 10`
-    this.con.query(sql, (error, rows) => {
-      rows.map((row) => {
-        Object.keys(row).map((field) => {
-          let value = row[field];
-          if (value != null & value != '') {
-            console.log(`${field}: ${row[field]}`)
-          }
-          // console.log(`${field}: ${row[field]}`)
-        })
-      })
-      this.con.end();
-    });
+  
+  /**
+   * 
+   * @param {String} fields 目标字段
+   * @param {String} table 目标表
+   * @param {Number} id 目标id
+   */
+  loadTargetFields(fields, table, id) {
+    return new Promise((resolve, reject) => {
+      let sql = `SELECT ${fields} FROM ${table} WHERE id=${id}`
+      this.con.query(sql, (error, rows) => {
+          resolve(rows[0]);
+        });
+      });
   }
 
   /**
@@ -63,7 +62,7 @@ class DBResourceLoader {
    */
   loadNames(table) {
     return new Promise((resolve, reject) => {
-      let sql = `SELECT id,${NAME_FIELDS} FROM ${table} LIMIT 100`
+      let sql = `SELECT id,${NAME_FIELDS} FROM ${table}`
       var names_map = {'name_en': {}, 'name_zh': {}, 'name_zf': {}, 'name_ru': {}, 'name_ja': {}};
 
       this.con.query(sql, (error, rows) => {
@@ -89,7 +88,7 @@ class DBResourceLoader {
    */
   loadTitles(table) {
     return new Promise((resolve, reject) => {
-      let sql = `SELECT id,${TITLE_FIELDS} FROM ${table} LIMIT 100`
+      let sql = `SELECT id,${TITLE_FIELDS} FROM ${table}`
       var titles_map = {'wpurl_en': {}, 'wpurl_zh': {}, 'wpurl_zf': {}, 'wpurl_ru': {}, 'wpurl_ja': {}};
       this.con.query(sql, (error, rows) => {
         rows.map((row) => {
@@ -113,13 +112,3 @@ class DBResourceLoader {
     }
   }
 }
-
-const dbLoader = new DBResourceLoader();
-// dbLoader.loadTargetFields(PERSON_FIELDS, 'person_sample');
-dbLoader.loadNames('person').then(names_map => {
-  dbLoader.loadTitles('person').then(titles_map => {
-    console.log(names_map);
-    console.log(titles_map);
-    dbLoader.con.end();
-  })
-})

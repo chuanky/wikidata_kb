@@ -1,4 +1,3 @@
-const { json } = require('d3');
 const fs = require('fs')
 /**
  * 判断wikidata entity的类型
@@ -38,15 +37,14 @@ module.exports = class EntityClassifier {
           return true;
         }
       } catch(e) {
-        this.logError(entity)
+        this.logError(entity, e)
       }
     }
   }
 
-  logError(entity) {
-    let id = this.errors.entity['id'];
-    if (!id) {
-      this.errors[id] = true;
+  logError(entity, e) {
+    if (!this.errors[entity['id']]) {
+      this.errors[entity['id']] = true;
       console.log(e);
       console.log(entity);
       this.os_err.write(JSON.stringify(entity) + '\n');
