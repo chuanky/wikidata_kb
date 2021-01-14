@@ -17,8 +17,8 @@ const EntityClassifier = require('../wiki/entity_classifier')
  */
 
 // load classes resources
-let locations = JSONUtil.loadSubclassesSync('../data/locality.json');
-let gov_agencies = JSONUtil.loadSubclassesSync('../data/government_agency.json');
+let locations = JSONUtil.loadSubclassesSync('../data/locations.json');
+let gov_agencies = JSONUtil.loadSubclassesSync('../data/organizations.json');
 // read write streams
 const rl = readline.createInterface({
   input: fs.createReadStream('../data/output-2020-12-28.jl')
@@ -26,7 +26,7 @@ const rl = readline.createInterface({
 
 const os_per = fs.createWriteStream('../data/output_per-2020-12-28.jl')
 const os_org = fs.createWriteStream('../data/output_org-2020-12-28.jl')
-const os_loc = fs.createWriteStream('../data/output_loc-2020-12-28.jl')
+const os_loc = fs.createWriteStream('E:/wikidata/output_loc-2020-12-28.jl')
 // process entity
 const classifier = new EntityClassifier(); 
 var counter = 0;

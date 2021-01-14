@@ -1,9 +1,11 @@
 const fs = require('fs');
 const readline = require('readline');
-const Classifier = require('./entity_classifier')
 const EntityFilter = require('./entity_filter')
 
-module.exports = class EntityProcessor {
+/**
+ * 处理wikidata json dump，根据语种和Claims筛选数据，目前目标语种为5个，处理后数据大约缩小10倍：1.1T -> 115G
+ */
+module.exports = class JSONDumpProcessor {
 
   /**
    * @param {String} inputPath 

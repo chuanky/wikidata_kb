@@ -50,7 +50,11 @@ module.exports = class DBResourceLoader {
   loadTargetFields(fields, table, id) {
     return new Promise((resolve, reject) => {
       let sql = `SELECT ${fields} FROM ${table} WHERE id=${id}`
+      
       this.con.query(sql, (error, rows) => {
+        if (error) {
+          console.log(sql);
+        }
           resolve(rows[0]);
         });
       });

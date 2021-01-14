@@ -1,38 +1,28 @@
-const { rollup } = require('d3');
 const fs = require('fs');
 const readline = require('readline');
 const DBResourceLoader = require('../mysql/db_resource_loader');
 const CONSTANTS = require('./CONSTANTS');
 
+/**
+ * 匹配过滤后的wikidata人物、组织、地点和iricaDB实体
+ */
 const dbLoader = new DBResourceLoader();
-
 // dbLoader.loadTargetFields(CONSTANTS.ORG_FIELDS, 'organization', 4198).then(records =>{
 //   console.log(records);
 // });
-const table = 'organization';
-const shortName = 'org';
+const table = 'location';
+const shortName = 'loc';
+const targetFields = CONSTANTS.LOC_FIELDS;
 
 dbLoader.loadTitles(table).then(titles_map => {
   dbLoader.loadNames(table).then(names_map => {
     const rl = readline.createInterface({
-      input: fs.createReadStream(`E:\\wikidata\\output_${shortName}-2020-12-28.jl`)
+      input: fs.createReadStream(`E:/wikidata/output_${shortName}-2020-12-28.jl`)
     })
     const os = fs.createWriteStream(`../data/${shortName}_matched-2020-12-28.jl`);
 
-    const lang_pairs_title = {
-      'enwiki': 'wpurl_en',
-      'zhwiki': 'wpurl_zh',
-      'zh_yuewiki': 'wpurl_zf',
-      'ruwiki': 'wpurl_ru',
-      'jawiki': 'wpurl_ja'
-    }
-    const lang_pairs_name = {
-      'en': 'name_en',
-      'zh-hans': 'name_zh',
-      'zh-hant': 'name_zf',
-      'ru': 'name_ru',
-      'ja': 'name_ja'
-    }
+    const lang_pairs_title = CONSTANTS.LANG_PAIRS_TITLE;
+    const lang_pairs_name = CONSTANTS.LANG_PAIRS_NAME;
 
     var counter = 0;
     var matched = 0;
@@ -46,7 +36,7 @@ dbLoader.loadTitles(table).then(titles_map => {
         if (titles_map[lang_db_title][title]) {
           matched++;
           // console.log(`iricaID: ${titles_map[lang_db][title]}, wikidataID: ${entity['id']}, match found in ${lang}`);
-          dbLoader.loadTargetFields(CONSTANTS.ORG_FIELDS, table, titles_map[lang_db_title][title]).then(record => {
+          dbLoader.loadTargetFields(targetFields, table, titles_map[lang_db_title][title]).then(record => {
             var result = { 'wikidata': entity, 'iricaDB': record }
             os.write(JSON.stringify(result) + '\n');
           });
@@ -59,7 +49,7 @@ dbLoader.loadTitles(table).then(titles_map => {
         let lang_db_name = lang_pairs_name[lang];
         if (names_map[lang_db_name][name]) {
           matched++;
-          dbLoader.loadTargetFields(CONSTANTS.ORG_FIELDS, table, names_map[lang_db_name][name]).then(record=> {
+          dbLoader.loadTargetFields(targetFields, table, names_map[lang_db_name][name]).then(record=> {
             var result = { 'wikidata': entity, 'iricaDB': record };
             os.write(JSON.stringify(result) + '\n');
           });

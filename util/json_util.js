@@ -94,14 +94,14 @@ module.exports = class JSONUtil {
     var unique = {}
     rl.on('line', (line) => {
       let entity = JSON.parse(line);
-      if (!unique[entity['id']]) {
-        unique[entity['id']] = true;
+      if (!unique[entity['iricaDB']['id']]) {
+        unique[entity['iricaDB']['id']] = true;
         os.write(JSON.stringify(entity) + '\n');
       }
     })
 
     rl.on('close', () => {
-      console.log('unique filter finished')
+      console.log(`${jlFilePath} unique filter finished, unique found ${Object.keys(unique).length}`)
     })
   }
 

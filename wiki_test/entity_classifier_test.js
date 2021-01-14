@@ -1,10 +1,8 @@
 const readline = require('readline')
 const fs = require('fs')
-const EventEmitter = require('events')
 const EntityClassifier = require('../wiki/entity_classifier')
 const JSONUtil = require('../util/json_util')
 const Entity = require('../wiki/entity')
-const WikiURL = require('../wiki/wikiURL')
 
 class EntityClassifierTest {
   

@@ -58,5 +58,60 @@ module.exports = class CONSTANTS {
     sourceTag,
     photoUrl
   `
+
+  static LOC_FIELDS = `
+    id,
+    ${this.NAME_FIELDS},
+    level,
+    countryId,
+    capitalId,
+    longitude,
+    longitudeFloat,
+    latitude,
+    latitudeFloat,
+    ${this.TITLE_FIELDS},
+    ancestorNames,
+    description,
+    aliases,
+    sourceTag
+  `
+
+  /**
+   * wikidata和iricaDB的实体名字段对应
+   */
+  static LANG_PAIRS_NAME = {
+    'en': 'name_en',
+    'zh-hans': 'name_zh',
+    'zh-hant': 'name_zf',
+    'ru': 'name_ru',
+    'ja': 'name_ja'
+  }
+
+  /**
+   * wikidata和iricaDB的wiki title字段对应
+   */
+  static LANG_PAIRS_TITLE = {
+    'enwiki': 'wpurl_en',
+    'zhwiki': 'wpurl_zh',
+    'zh_yuewiki': 'wpurl_zf',
+    'ruwiki': 'wpurl_ru',
+    'jawiki': 'wpurl_ja'
+  }
+
+  static WIKI_NAME_TITLE_MAP = {
+    'en': 'enwiki',
+    'zh-hans': 'zhwiki',
+    'zh-hant': 'zh_yuewiki',
+    'ru': 'ruwiki',
+    'ja': 'jawiki'
+  }
+
+  static WIKI_LINK_INITIAL = {
+    'enwiki': 'en',
+    'zhwiki': 'zh',
+    'zh_yuewiki': 'zh-yue',
+    'ruwiki': 'ru',
+    'jawiki': 'ja'
+  }
 }
 

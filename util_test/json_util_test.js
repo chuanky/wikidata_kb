@@ -1,6 +1,8 @@
 const JSONUtil = require('../util/json_util')
 
-// JSONUtil.removeDuplicates('../data/classifier_err.jl')
+// JSONUtil.removeDuplicates('../data/loc_matched-2020-12-28.jl')
+// JSONUtil.removeDuplicates('../data/per_matched-2020-12-28.jl')
+// JSONUtil.removeDuplicates('../data/org_matched-2020-12-28.jl')
 
 // JSONUtil.loadSubclasses('../data/locality.json').then(loc => {
 //   console.log(loc)
