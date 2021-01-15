@@ -2,7 +2,7 @@ const readline = require('readline')
 const fs = require('fs')
 const EntityClassifier = require('../wiki/entity_classifier')
 const JSONUtil = require('../util/json_util')
-const Entity = require('../wiki/entity')
+const Entity = require('../wiki/person_entity')
 
 class EntityClassifierTest {
   
@@ -67,8 +67,8 @@ class EntityClassifierTest {
   }
 }
 
-let gov_agencies = JSONUtil.loadSubclassesSync('../data/government_agency.json');
-let locations = JSONUtil.loadSubclassesSync('../data/locality.json');
+let gov_agencies = JSONUtil.loadSubclassesSync('../data/organizations.json');
+let locations = JSONUtil.loadSubclassesSync('../data/locations.json');
 
 let test = new EntityClassifierTest();
 test.isPersionTest();

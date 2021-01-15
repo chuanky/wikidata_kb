@@ -3,7 +3,7 @@ const readline = require('readline');
 const emojiStrip = require('emoji-strip')
 var mysql = require('mysql');
 
-// ERROR: 数据量过大，数据库插入后期变慢，js会报错
+// 用于生成wikidata id和中英文label表
 const con = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -12,36 +12,55 @@ const con = mysql.createConnection({
 });
 
 const rl = readline.createInterface({
-  input: fs.createReadStream('../data/output-2020-12-28.jl'),
-  crlfDelay: Infinity
+  input: fs.createReadStream('../data/output-2020-12-28.jl')
 });
 
-var values = []
+var counter = 0;
+var values = [];
+var insert_time = 1000;
+
 rl.on('line', (line) => {
   let entity = JSON.parse(line);
-  if (entity['labels']['en']) {
-    var label = emojiStrip(entity['labels']['en']['value'])
-    label = encodeURI(label)
-    if (label.length > 2048) label.slice(0, 2048);
-    values.push([entity['id'], label])
-    // result[entity['id']] = entity['labels']['en']['value']  
-    if (values.length >= 20000) {
-      insert(values);
-      values = [];
-    }
+
+  var label_en = getLabel('en');
+  var label_zh = getLabel('zh-hans');
+  values.push([entity['id'], label_en, label_zh]);
+  
+  if (values.length >= 20000) {
+    insert(values);
+    counter += values.length;
+    values = [];
+    console.log(`inserting values into DB`);
+    rl.pause();
+    console.log(`pause for ${insert_time} ms`);
+    setTimeout(() => rl.resume(), insert_time);
   }
 });
 
 rl.on('close', () => {
   if (values.length > 0) insert(values);
-  console.log('file read finished')
+  counter += values.length;
+  console.log(`file read finished, total insertion: ${counter}`)
 });
 
 function insert(values) {
-  let sql = "INSERT INTO entity_label (id, label) VALUES ?";
-
+  let sql = "INSERT INTO entity_label (id, name_en, name_zh) VALUES ?";
+  let insert_start = Date.now();
   con.query(sql, [values], (err, result) => {
     if (err) throw err;
-    console.log(`${values.length} records has been inserted.`)
+    console.log(`${values.length} records has been inserted. Total insertion: ${counter}`);
+    insert_time = Date.now() - insert_start;
   });
+}
+
+function getLabel(lang) {
+  if (entity['labels'][lang]) {
+    label_en = emojiStrip(entity['labels'][lang]['value'])
+    label_en = encodeURI(label_en)
+    
+    if (label_en.length > 2048) return label_en.slice(0, 2048);
+    return label_en;
+  }
+
+  return null;
 }

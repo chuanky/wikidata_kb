@@ -98,6 +98,14 @@ module.exports = class CONSTANTS {
     'jawiki': 'wpurl_ja'
   }
 
+  static LANG_PAIRS_DESC = {
+    'en': 'description',
+    'zh-hans': 'description_zh',
+    'zh-hant': 'description_zf',
+    'ru': 'description_ru',
+    'ja': 'description_ja',
+  }
+
   static WIKI_NAME_TITLE_MAP = {
     'en': 'enwiki',
     'zh-hans': 'zhwiki',
