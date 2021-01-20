@@ -27,16 +27,17 @@ rl.on('line', (line) => {
     let wiki_entity = new PersonEntity(entity_pair['wikidata'], con, con_irica);
     let db_entity = entity_pair['iricaDB'];
 
-    wiki_entity.getCountry('per').then(countryId => {
-      console.log(wiki_entity.getId());
-      console.log(wiki_entity.getLabel('en'));
-      console.log(wiki_entity.getNames());
-      console.log(wiki_entity.getWikiUrls());
-      console.log(wiki_entity.getDescriptions());
-      console.log(wiki_entity.getAliases());
-      console.log(countryId);
-      console.log(wiki_entity.getPhotoUrl());
-    });
+    // wiki_entity.getCountry('per').then(countryId => {
+    //   console.log(wiki_entity.getId());
+    //   console.log(wiki_entity.getLabel('en'));
+    //   console.log(wiki_entity.getNames());
+    //   console.log(wiki_entity.getWikiUrls());
+    //   console.log(wiki_entity.getDescriptions());
+    //   console.log(wiki_entity.getAliases());
+    //   console.log(countryId);
+    //   console.log(wiki_entity.getPhotoUrl());
+    // });
+    console.log(wiki_entity.getBirthday());
     
   } else {
     rl.close();

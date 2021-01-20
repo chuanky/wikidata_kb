@@ -6,4 +6,11 @@ module.exports = class DateUtil {
   static getUTCDateTime() {
     return new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
   }
+
+  static getUTCDateTimeFromString(time) {
+    if (!time) return null;
+    
+    var dateReg = /\d{4}\-\d{2}\-\d{2}/;
+    return time.match(dateReg);
+  }
 }

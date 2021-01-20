@@ -56,6 +56,7 @@ module.exports = class CONSTANTS {
     leaderName_zh,
     aliases,
     sourceTag,
+    updateTime,
     photoUrl
   `
 
@@ -73,7 +74,9 @@ module.exports = class CONSTANTS {
     ancestorNames,
     description,
     aliases,
-    sourceTag
+    sourceTag,
+    updateTime,
+    photoUrl
   `
 
   /**

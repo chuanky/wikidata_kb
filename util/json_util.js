@@ -85,6 +85,25 @@ module.exports = class JSONUtil {
     return result;
   }
 
+  static loadLocaions(filePath) {
+    return new Promise ((resolve, reject) => {
+      console.log(`loading... ${filePath}`);
+      const rl = readline.createInterface({
+        input: fs.createReadStream(filePath)
+      });
+      var result = {};
+      rl.on('line', (line) => {
+        let loc_info = JSON.parse(line);
+        result[loc_info['id']] = {'longitude': loc_info['longitude'], 'latitude': loc_info['latitude']}
+      });
+  
+      rl.on('close', () => {
+        console.log(`${filePath} loaded`);
+        resolve(result)
+      });
+    });
+  }
+
   static removeDuplicates(jlFilePath) {
     let os = fs.createWriteStream(jlFilePath + '_unique');
     let rl = readline.createInterface({

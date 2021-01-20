@@ -79,11 +79,11 @@ module.exports = class Entity {
   }
 
   /**
-   * @param {String} entity_type {per: P27; org: P17}
+   * @param {String} entity_type {per: P27, org: P17, loc: P17}
    */
   getCountry(entity_type) {
     return new Promise((resolve, reject) => {
-      const typeToId = {'per': 'P27', 'org': 'P17'};
+      const typeToId = {'per': 'P27', 'org': 'P17', 'loc': 'P17'};
       var countryId = null;
       let id = this.getLastClaimValue(typeToId[entity_type], 'id');
       if (!id) return resolve(countryId);
@@ -111,12 +111,33 @@ module.exports = class Entity {
     });
   }
 
+  getLongitude() {
+    return this.getFirstClaimValue('P625', 'longitude');
+  }
+
+  getLatitude() {
+    return this.getFirstClaimValue('P625', 'latitude')
+  }
+
   getPhotoUrl() {
     let image = this.getFirstClaimValue('P18', null);
     let baseUrl = 'https://commons.wikimedia.org/wiki/File:';
     if (image) {
       return `${baseUrl}${image}`
     }
+    return null;
+  }
+
+  getFirstClaim(claimId) {
+    let claims = this.entity['claims'][claimId];
+    if (!claims) return null;
+    for (var i = 0; i < claims.length; i++) {
+      let data = claims[i]['mainsnak']['datavalue'];
+      if (data) {
+        return data;
+      }
+    }
+
     return null;
   }
 

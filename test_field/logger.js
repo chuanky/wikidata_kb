@@ -7,7 +7,7 @@ module.exports = class Logger {
    * @param {String} outputType {'console', 'file'} 
    * @param {String} outputPath '../data/xxx.log 
    */
-  constructor(level, outputType, outputPath) {
+  constructor(level, outputType, outputPath, detailMode=true) {
     const levels = { 'error': 0, 'debug': 1, 'info': 2 };
     this.level = levels[level];
     this.outputType = outputType;
@@ -31,13 +31,21 @@ module.exports = class Logger {
   log(message, level) {
     const levels = {0: 'ERROR', 1: 'DEBUG', 2: 'INFO'}
     const timeInfo = DateUtil.getUTCDateTime();
-    if (this.level >= level) {
+    if (level >= this.level) {
       if (this.outputType == 'console') {
-        console.log(`${timeInfo} ${levels[level]}: ${message}`);
+        if (this.detailMode) {
+          console.log(`${timeInfo} ${levels[level]}: ${message}`);
+        } else {
+          console.log(message);
+        }
       }
 
       if (this.outputType == 'file') {
-        this.os.write(`${timeInfo} ${levels[level]}: ${message}\r\n`);
+        if (this.detailMode) {
+          this.os.write(`${timeInfo} ${levels[level]}: ${message}\r\n`);
+        } else {
+          this.os.write(`${message}\r\n`);
+        }
       }
     }
   }

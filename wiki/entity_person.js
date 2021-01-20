@@ -1,4 +1,4 @@
-const CONSTANTS = require("./CONSTANTS");
+const DateUtil = require("../util/date_util");
 const Entity = require("./entity");
 
 /**
@@ -32,8 +32,7 @@ module.exports = class PersonEntity extends Entity {
   getBirthday() {
     let time = this.getFirstClaimValue('P569', 'time');
     if (time) {
-      var dateReg = /\d{4}\-\d{2}\-\d{2}/;
-      let result =  time.match(dateReg);
+      let result = DateUtil.getUTCDateTimeFromString(time);
       if (result) {
         return result[0];
       }
