@@ -94,11 +94,11 @@ module.exports = class CONSTANTS {
    * wikidata和iricaDB的wiki title字段对应
    */
   static LANG_PAIRS_TITLE = {
-    'enwiki': 'wpurl_en',
-    'zhwiki': 'wpurl_zh',
-    'zh_yuewiki': 'wpurl_zf',
-    'ruwiki': 'wpurl_ru',
-    'jawiki': 'wpurl_ja'
+    'enwiki': 'wpUrl_en',
+    'zhwiki': 'wpUrl_zh',
+    'zh_yuewiki': 'wpUrl_zf',
+    'ruwiki': 'wpUrl_ru',
+    'jawiki': 'wpUrl_ja'
   }
 
   static LANG_PAIRS_DESC = {

@@ -1,12 +1,13 @@
 const MatchedEntityProcessor = require('./matched_entity_processor');
-const PersonEntity = require('./person_entity');
+const PersonEntity = require('./entity_per');
 const DateUtil = require('../util/date_util');
 const Logger = require('../test_field/logger')
+const DBUpdater = require('../mysql/db_updater')
 
 class MatchedPersonProcessor extends MatchedEntityProcessor {
   constructor(inputFile) {
     super(inputFile);
-    this.logger = new Logger('debug', 'file', `../data/matched_per_processor.log`);
+    this.logger = new Logger('info', 'console', `../data/matched_per_processor.log`);
     this.result = {
       'name_en': 0, 'name_zh': 0, 'name_zf': 0, 'name_ru': 0, 'name_ja': 0,
       'countryId': 0,
@@ -21,12 +22,18 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
       'updateTime': 0
     };
 
+    this.db_updater = new DBUpdater();
+    this.update_result = {'matched': 0, 'changed': 0, 'errors': 0};
+    this.sql_logger = new Logger('debug', 'file', '../data/per_sql_error.log')
+
     this.rl.on('close', () => {
       setTimeout(() => {
         this.logger.info(`Total number of Entity: ${this.counter}; Total processed: ${this.processed}`);
-        console.log(this.result)
+        // console.log(this.result);
+        console.log(this.update_result);
       }, 2000);
     })
+    
   }
 
   process() {
@@ -36,22 +43,50 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
       let wiki_entity = new PersonEntity(entity_pair['wikidata'], this.con, this.con_irica);
       let db_entity = entity_pair['iricaDB'];
     
-      // 统计可更新信息,wikidata中职位、党派信息为id, 需要数据库访问得到label
-      this.update(wiki_entity, db_entity, this.result);
+      // this.updateStats(wiki_entity, db_entity, this.result);
+      this.update(wiki_entity, db_entity);
     
       if (this.counter % 100 == 0) {
         this.rl.pause();
-        this.logger.info(`pausing for 100ms, processed: ${this.counter}`)
-        // setTimeout(() => rl.resume(), 100);
-        setTimeout(() => this.rl.close(), 1000);
+        let pause_time = 500;
+        this.logger.info(`pausing for ${pause_time}ms, processed: ${this.counter}`)
+        setTimeout(() => this.rl.resume(), pause_time);
+        // setTimeout(() => this.rl.close(), 1000);
       }
     });
   }
 
   /**
+   * 更新实体信息到数据库
    * @param {PersonEntity} wiki_entity 
    */
-  update = async (wiki_entity, db_entity, result) => {
+  update = async (wiki_entity, db_entity) => {
+    let names = wiki_entity.getNames();
+    let countryId = await wiki_entity.getCountry('per');
+    let job = await wiki_entity.getJob();
+    let birthday = wiki_entity.getBirthday();
+    let photoUrl = wiki_entity.getPhotoUrl();
+    let wikiUrls = wiki_entity.getWikiUrls();
+    let party = await wiki_entity.getParty();
+    let descriptions = wiki_entity.getDescriptions();
+    let aliases = wiki_entity.getAliases();
+    let sourceTag = wiki_entity.getSourceTag('wikidata_2020-12-28', db_entity);
+
+    var updateValues = {...names, 'countryId': countryId, ...job, 'birthday': birthday, 
+                        'photoUrl': encodeURI(photoUrl), ...wikiUrls, 'partyName': party,  
+                        ...descriptions, 'aliases': aliases,
+                        'sourceTag': sourceTag, 'updateTime': DateUtil.getUTCDateTime()
+                       }
+    let sql = this.db_updater.buildUpdateValueString(db_entity['id'], updateValues, 'person');
+    this.updateDB(sql, db_entity['id'], 'person', updateValues, this.sql_logger);
+    this.processed++;
+  }
+
+  /**
+   * 统计可更新信息,wikidata中职位、党派信息为id, 需要数据库访问得到label
+   * @param {PersonEntity} wiki_entity 
+   */
+  updateStats = async (wiki_entity, db_entity, result) => {
     let job = await wiki_entity.getJob();
     let party = await wiki_entity.getParty();
     let countryId = await wiki_entity.getCountry('per');
@@ -71,4 +106,4 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
   }
 }
 
-new MatchedPersonProcessor('E:/wikidata/per_matched-2020-12-28.jl_unique').process();
+new MatchedPersonProcessor('../data/per_matched-2020-12-28.jl').process();

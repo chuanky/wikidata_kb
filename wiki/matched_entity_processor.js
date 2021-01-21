@@ -1,6 +1,7 @@
 const fs = require('fs');
 const readline = require('readline');
 const mysql = require('mysql')
+const DBUpdater = require('../mysql/db_updater')
 
 module.exports = class MatchedEntityProcessor {
   constructor(inputFile) {
@@ -21,8 +22,27 @@ module.exports = class MatchedEntityProcessor {
       database: "irica20140408"
     });
 
+    this.db_updater = new DBUpdater();
+    this.update_result = {'matched': 0, 'changed': 0, 'errors': 0};
+
     this.counter = 0;
     this.processed = 0;
+  }
+
+  /**
+   * 更新数据库，统计更新情况
+   * 如果遇到IncorrectStringError的情况，把出错的数据encodeURI后再尝试更新
+   */
+  updateDB(sql, id, table, updateValues, sql_logger) {
+    this.db_updater.query(sql).then(record => {
+      this.update_result['matched'] += record['affectedRows']
+      this.update_result['changed'] += record['changedRows']
+    }).catch(error => {
+        this.update_result['errors']++;
+        sql_logger.debug(error['sqlMessage']);
+        sql_logger.debug(error['sql']);
+        this.db_updater.handleIncorrectStringError(error, updateValues, id, table);
+    })
   }
 
   /**

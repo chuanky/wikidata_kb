@@ -33,7 +33,9 @@ module.exports = class Entity {
       let name = this.entity['labels'][lang];
       let title = this.entity['sitelinks'][this.wiki_name_title_map[lang]];
       if (name) {
-        names[this.lang_pairs_name[lang]] = name['value'];
+        var value = name['value'];
+        while (value[value.length - 1] == "\\") { value = value.slice(0, -1)};
+        names[this.lang_pairs_name[lang]] = value;
       } else if (title) {
         names[this.lang_pairs_name[lang]] = title['title'];
       }
@@ -59,7 +61,9 @@ module.exports = class Entity {
     for (let lang of Object.keys(lang_pairs_desc)) {
       let desc = this.entity['descriptions'][lang];
       if (desc) {
-        descs[lang_pairs_desc[lang]] = desc['value'];
+        var value = desc['value'];
+        while (value[value.length - 1] == "\\") { value = value.slice(0, -1)};
+        descs[lang_pairs_desc[lang]] = value;
       }
     }
     return descs;
@@ -75,6 +79,24 @@ module.exports = class Entity {
         }
       }
     }
+    
+    if (result.length < 1) return null;
+    var encodedResult = encodeURI(result);
+    while (encodedResult.length > 1023) {
+      let split_char = '%7C%7C'
+      var aliases = encodedResult.split(split_char);
+      aliases.shift();
+      encodedResult = this.arrayToString(aliases, split_char);
+    }
+    return encodedResult;
+  }
+
+  arrayToString(array, split_char) {
+    var result = '';
+    for (var i = 0; i < array.length; i++) {
+      result += array[i] + split_char
+    }
+    if (result.length > 0) return result.slice(0, -6)
     return result;
   }
 
@@ -85,7 +107,7 @@ module.exports = class Entity {
     return new Promise((resolve, reject) => {
       const typeToId = {'per': 'P27', 'org': 'P17', 'loc': 'P17'};
       var countryId = null;
-      let id = this.getLastClaimValue(typeToId[entity_type], 'id');
+      let id = this.getFirstClaimValue(typeToId[entity_type], 'id');
       if (!id) return resolve(countryId);
 
       let sql = `SELECT id, name_en, name_zh FROM entity_label WHERE id='${id}'`;
@@ -123,7 +145,10 @@ module.exports = class Entity {
     let image = this.getFirstClaimValue('P18', null);
     let baseUrl = 'https://commons.wikimedia.org/wiki/File:';
     if (image) {
-      return `${baseUrl}${image}`
+      let result = `${baseUrl}${image}`;
+      if (result.length < 255) {
+        return result
+      }
     }
     return null;
   }
@@ -169,5 +194,23 @@ module.exports = class Entity {
       }
     }
     return null;
+  }
+
+  getSourceTag(appendSource, db_entity) {
+    var sourceTag = db_entity['sourceTag'];
+
+    if (sourceTag != null && sourceTag != '') {
+      if (sourceTag.includes(appendSource)) return sourceTag;
+      sourceTag += `, ${appendSource}`
+    } else {
+      sourceTag = appendSource
+    }
+
+    while (sourceTag.length > 50) {
+      var sources = sourceTag.split(',');
+      sources.shift();
+      sourceTag = sources.toString();
+    }
+    return sourceTag;
   }
 }

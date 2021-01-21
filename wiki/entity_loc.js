@@ -15,6 +15,11 @@ module.exports = class LocationEntity extends Entity {
         result += name + '||';
       }
     }
+
+    if (result.length > 255) {
+      result = result.slice(0, 255);
+    }
+
     return result;
   }
 }

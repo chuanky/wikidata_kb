@@ -54,10 +54,12 @@ module.exports = class DBResourceLoader {
       this.con.query(sql, (error, rows) => {
         if (error) {
           console.log(sql);
-        }
+          console.log(error);
+        } else {
           resolve(rows[0]);
-        });
+        }
       });
+    });
   }
 
   /**

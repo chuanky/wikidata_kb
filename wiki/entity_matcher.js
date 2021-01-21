@@ -10,14 +10,14 @@ const dbLoader = new DBResourceLoader();
 // dbLoader.loadTargetFields(CONSTANTS.ORG_FIELDS, 'organization', 4198).then(records =>{
 //   console.log(records);
 // });
-const table = 'location';
-const shortName = 'loc';
-const targetFields = CONSTANTS.LOC_FIELDS;
+const table = 'person';
+const shortName = 'per';
+const targetFields = CONSTANTS.PERSON_FIELDS;
 
 dbLoader.loadTitles(table).then(titles_map => {
   dbLoader.loadNames(table).then(names_map => {
     const rl = readline.createInterface({
-      input: fs.createReadStream(`E:/wikidata/output_${shortName}-2020-12-28.jl`)
+      input: fs.createReadStream(`E:/wikidata/output_${shortName}-2020-12-28.jl`, {start : 3499158508})
     })
     const os = fs.createWriteStream(`../data/${shortName}_matched-2020-12-28.jl`);
 
@@ -47,6 +47,10 @@ dbLoader.loadTitles(table).then(titles_map => {
       for (let lang of Object.keys(entity['labels'])) {
         let name = entity['labels'][lang]['value'];
         let lang_db_name = lang_pairs_name[lang];
+        if (name == '华春莹') {
+          console.log(entity);
+          rl.close();
+        }
         if (names_map[lang_db_name][name]) {
           matched++;
           dbLoader.loadTargetFields(targetFields, table, names_map[lang_db_name][name]).then(record=> {
@@ -57,10 +61,10 @@ dbLoader.loadTitles(table).then(titles_map => {
         }
       }
 
-      if (counter % 10000 == 0) {
+      if (counter % 1000000 == 0) {
         console.log(`${counter} ${table} processed`);
         rl.pause();
-        setTimeout(() => rl.resume(), 10000);
+        setTimeout(() => rl.resume(), 1000);
       }
     });
 

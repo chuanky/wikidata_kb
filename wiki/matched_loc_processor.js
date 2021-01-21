@@ -3,11 +3,11 @@ const DateUtil = require('../util/date_util');
 const LocEntity = require('./entity_loc');
 const Logger = require('../test_field/logger')
 
-
 class MatchedLocProcessor extends MatchedEntityProcessor {
   constructor(inputFile) {
     super(inputFile);
     this.logger = new Logger('info', 'console', `../data/matched_loc_processor.log`, false);
+    this.sql_logger = new Logger('debug', 'file', '../data/loc_sql_error.log')
     this.result = {
       'name_en': 0,'name_zh': 0,'name_zf': 0,'name_ru': 0,'name_ja': 0,
       'countryId': 0,
@@ -22,12 +22,13 @@ class MatchedLocProcessor extends MatchedEntityProcessor {
       'updateTime': 0,
       'photoUrl': 0,
     }
-
+    
     this.rl.on('close', () => {
       setTimeout(() => {
         this.logger.info(`Total number of Entity: ${this.counter}; Total processed: ${this.processed}`);
-        console.log(this.result)
-      }, 2000);
+        // console.log(this.result)
+        console.log(this.update_result)
+      }, 10000);
     })
   }
 
@@ -38,22 +39,46 @@ class MatchedLocProcessor extends MatchedEntityProcessor {
       let wiki_entity = new LocEntity(entity_pair['wikidata'], this.con, this.con_irica);
       let db_entity = entity_pair['iricaDB'];
     
-      // 统计可更新信息,wikidata中职位、党派信息为id, 需要数据库访问得到label
-      this.update(wiki_entity, db_entity, this.result);
+      this.update(wiki_entity, db_entity);
     
-      if (this.counter % 50 == 0) {
+      if (this.counter % 500 == 0) {
         this.rl.pause();
         this.logger.info(`pausing for 100ms, processed: ${this.counter}`)
-        setTimeout(() => this.rl.resume(), 100);
+        setTimeout(() => this.rl.resume(), 1500);
         // setTimeout(() => this.rl.close(), 1000);
       }
     });
   }
 
   /**
+   * 更新实体信息到数据库
    * @param {LocEntity} wiki_entity 
    */
-  update = async (wiki_entity, db_entity, result) => {
+  update = async (wiki_entity, db_entity) => {
+    let names = wiki_entity.getNames();
+    let countryId = await wiki_entity.getCountry('loc');
+    let wikiUrls = wiki_entity.getWikiUrls();
+    let descriptions = wiki_entity.getDescriptions();
+    let longitudeFloat = wiki_entity.getLongitude();
+    let latitudeFloat = wiki_entity.getLatitude();
+    let ancestorNames = wiki_entity.getAncestorNames();
+    let aliases = wiki_entity.getAliases();
+    let photoUrl = wiki_entity.getPhotoUrl();
+    let sourceTag = wiki_entity.getSourceTag('wikidata_2020-12-28', db_entity);
+
+    var updateValues = {...names, 'countryId': countryId, ...wikiUrls, ...descriptions, 
+                        'longitudeFloat': longitudeFloat, 'latitudeFloat': latitudeFloat,
+                        'ancestorNames': ancestorNames, aliases: aliases, 'photoUrl': photoUrl, 
+                        'sourceTag': sourceTag, 'updateTime': DateUtil.getUTCDateTime()}
+    let sql = this.db_updater.buildUpdateValueString(db_entity['id'], updateValues, 'location');
+    this.updateDB(sql, db_entity['id'], 'location', updateValues, this.sql_logger);
+    this.processed++;
+  }
+
+  /**
+   * @param {LocEntity} wiki_entity 
+   */
+  updateStats = async (wiki_entity, db_entity, result) => {
     let countryId = await wiki_entity.getCountry('org');
     this.logger.debug(`${wiki_entity.getId()}: ${wiki_entity.getLabel('en')} ---- ${db_entity['id']}: ${db_entity['name_en']}`)
     this.updateMultiLangFields(wiki_entity.getNames(), db_entity, result);

@@ -2,12 +2,12 @@ const MatchedEntityProcessor = require('./matched_entity_processor');
 const DateUtil = require('../util/date_util');
 const OrgEntity = require('./entity_org');
 const Logger = require('../test_field/logger')
-
+const DBUpdater = require('../mysql/db_updater')
 
 class MatchedOrgProcessor extends MatchedEntityProcessor {
   constructor(inputFile) {
     super(inputFile);
-    this.logger = new Logger('debug', 'file', `../data/matched_org_processor.log`);
+    this.logger = new Logger('info', 'console', `../data/matched_org_processor.log`);
     this.result = {
       'name_en': 0,'name_zh': 0,'name_zf': 0,'name_ru': 0,'name_ja': 0,
       'countryId': 0,
@@ -26,10 +26,15 @@ class MatchedOrgProcessor extends MatchedEntityProcessor {
       'updateTime': 0,
     }
 
+    this.db_updater = new DBUpdater();
+    this.update_result = {'matched': 0, 'changed': 0, 'errors': 0};
+    this.sql_logger = new Logger('debug', 'file', '../data/org_sql_error.log')
+
     this.rl.on('close', () => {
       setTimeout(() => {
         this.logger.info(`Total number of Entity: ${this.counter}; Total processed: ${this.processed}`);
-        console.log(this.result)
+        // console.log(this.result)
+        console.log(this.update_result)
       }, 2000);
     })
   }
@@ -41,22 +46,48 @@ class MatchedOrgProcessor extends MatchedEntityProcessor {
       let wiki_entity = new OrgEntity(entity_pair['wikidata'], this.con, this.con_irica);
       let db_entity = entity_pair['iricaDB'];
     
-      // 统计可更新信息,wikidata中职位、党派信息为id, 需要数据库访问得到label
-      this.update(wiki_entity, db_entity, this.result);
+      this.update(wiki_entity, db_entity);
     
-      if (this.counter % 50 == 0) {
+      if (this.counter % 500 == 0) {
         this.rl.pause();
-        this.logger.info(`pausing for 100ms, processed: ${this.counter}`)
-        // setTimeout(() => this.rl.resume(), 100);
-        setTimeout(() => this.rl.close(), 1000);
+        this.logger.info(`pausing for 1000ms, processed: ${this.counter}`)
+        setTimeout(() => this.rl.resume(), 1000);
+        // setTimeout(() => this.rl.close(), 1000);
       }
     });
   }
 
   /**
+   * 更新实体信息到数据库
    * @param {OrgEntity} wiki_entity 
    */
-  update = async (wiki_entity, db_entity, result) => {
+  update = async (wiki_entity, db_entity) => {
+    let names = wiki_entity.getNames();
+    let countryId = await wiki_entity.getCountry('org');
+    let wikiUrls = wiki_entity.getWikiUrls();
+    let descriptions = wiki_entity.getDescriptions();
+    let longitude = wiki_entity.getLongitude();
+    let latitude = wiki_entity.getLatitude();
+    let foundingDate = wiki_entity.getFoundingDate();
+    let foundernames = await wiki_entity.getFounderNames();
+    let leaderNames = await wiki_entity.getLeaderNames();
+    let aliases = wiki_entity.getAliases();
+    let photoUrl = wiki_entity.getPhotoUrl();
+    let sourceTag = wiki_entity.getSourceTag('wikidata_2020-12-28', db_entity);
+
+    var updateValues = {...names, 'countryId': countryId, ...wikiUrls, ...descriptions, 
+                        'longitude': longitude, 'latitude': latitude, 'foundingDate': foundingDate,
+                        ...foundernames, ...leaderNames, aliases: aliases, 'photoUrl': photoUrl, 
+                        'sourceTag': sourceTag, 'updateTime': DateUtil.getUTCDateTime()}
+    let sql = this.db_updater.buildUpdateValueString(db_entity['id'], updateValues, 'organization');
+    this.updateDB(sql, db_entity['id'], 'organization', updateValues, this.sql_logger);
+    this.processed++;
+  }
+
+  /**
+   * @param {OrgEntity} wiki_entity 
+   */
+  updateStats = async (wiki_entity, db_entity, result) => {
     let countryId = await wiki_entity.getCountry('org');
     let founderNames = await wiki_entity.getFounderNames();
     let leaderNames = await wiki_entity.getLeaderNames();

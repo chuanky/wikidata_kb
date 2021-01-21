@@ -1,7 +1,7 @@
 const fs = require('fs');
 const readline = require('readline');
 const mysql = require('mysql');
-const PersonEntity = require('../wiki/person_entity');
+const PersonEntity = require('../wiki/entity_per');
 
 const rl = readline.createInterface({
   input: fs.createReadStream('E:/wikidata/per_matched-2020-12-28.jl_unique')
@@ -37,7 +37,8 @@ rl.on('line', (line) => {
     //   console.log(countryId);
     //   console.log(wiki_entity.getPhotoUrl());
     // });
-    console.log(wiki_entity.getBirthday());
+    // console.log(wiki_entity.getBirthday());
+    wiki_entity.getCountry('per').then(country => console.log(country));
     
   } else {
     rl.close();
