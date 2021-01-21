@@ -1,7 +1,8 @@
 const fs = require('fs');
 const readline = require('readline');
-const mysql = require('mysql')
-const DBUpdater = require('../mysql/db_updater')
+const mysql = require('mysql');
+const DBUpdater = require('../mysql/db_updater');
+const fetch = require('node-fetch');
 
 module.exports = class MatchedEntityProcessor {
   constructor(inputFile) {
@@ -94,4 +95,19 @@ module.exports = class MatchedEntityProcessor {
       result[field_name]++;
     }
   }
+
+  getEntity(wiki_id) {
+    let baseUrl = 'https://www.wikidata.org/w/api.php?action=wbgetentities';
+    let idCondition = `&ids=${wiki_id}`;
+    let languageCondition = '&languages=en||zh-hans||zh-hant||ru||ja'
+    let format = '&format=json'
+    let siteFilter = '&sitefilter=enwiki|zhwiki|zh_yuewiki|ruwiki|jawiki'
+    let url = baseUrl + idCondition + languageCondition + siteFilter + format;
+
+    return new Promise((resolve, reject) => {
+        fetch(url)
+        .then(res => res.json())
+        .then(json => resolve(json['entities'][wiki_id]));
+    });
+}
 }

@@ -30,7 +30,7 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
       setTimeout(() => {
         this.logger.info(`Total number of Entity: ${this.counter}; Total processed: ${this.processed}`);
         // console.log(this.result);
-        console.log(this.update_result);
+        // console.log(this.update_result);
       }, 2000);
     })
     
@@ -57,6 +57,27 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
   }
 
   /**
+   * 访问wikidata query api，更新单个实体数据
+   * @param {String} wiki_id 实体的wikidata Id，例：'Q22686'
+   * @param {Number} db_id 实体的数据库id，例：67083
+   */
+  async processSingle(wiki_id, db_id) {
+    let wikidata = await this.getEntity(wiki_id);
+    let wiki_entity = new PersonEntity(wikidata, this.con, this.con_irica);
+    this.con_irica.query(`SELECT * FROM person WHERE id=${db_id}`, (error, record)=>{
+      if (!error) {
+        let db_entity = record[0];
+        this.update(wiki_entity, db_entity);
+        console.log('update finished');
+        console.log(`update from`);
+        console.log(db_entity);
+        console.log(`update to`);
+        console.log(wikidata);
+      }
+    });
+  }
+
+  /**
    * 更新实体信息到数据库
    * @param {PersonEntity} wiki_entity 
    */
@@ -70,7 +91,7 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
     let party = await wiki_entity.getParty();
     let descriptions = wiki_entity.getDescriptions();
     let aliases = wiki_entity.getAliases();
-    let sourceTag = wiki_entity.getSourceTag('wikidata_2020-12-28', db_entity);
+    let sourceTag = wiki_entity.getSourceTag('wikidata_2021-01-21', db_entity);
 
     var updateValues = {...names, 'countryId': countryId, ...job, 'birthday': birthday, 
                         'photoUrl': encodeURI(photoUrl), ...wikiUrls, 'partyName': party,  
@@ -106,4 +127,7 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
   }
 }
 
-new MatchedPersonProcessor('../data/per_matched-2020-12-28.jl').process();
+const processor = new MatchedPersonProcessor('../data/per_matched-2020-12-28.jl');
+
+// processor.processSingle('Q22686', 67083);
+processor.processSingle('Q6279', 281595);

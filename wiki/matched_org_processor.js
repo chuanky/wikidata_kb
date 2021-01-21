@@ -58,6 +58,24 @@ class MatchedOrgProcessor extends MatchedEntityProcessor {
   }
 
   /**
+   * 访问wikidata query api，更新单个实体数据
+   * @param {String} wiki_id 实体的wikidata Id，例：'Q22686'
+   * @param {Number} db_id 实体的数据库id，例：67083
+   */
+  async processSingle(wiki_id, db_id) {
+    let wikidata = await this.getEntity(wiki_id);
+    let wiki_entity = new OrgEntity(wikidata, this.con, this.con_irica);
+    this.con_irica.query(`SELECT * FROM person WHERE id=${db_id}`, (error, record)=>{
+      if (!error) {
+        let db_entity = record[0];
+        this.update(wiki_entity, db_entity);
+        console.log('update finished');
+        console.log(`update from ${db_entity} to ${wikidata}`)
+      }
+    });
+  }
+
+  /**
    * 更新实体信息到数据库
    * @param {OrgEntity} wiki_entity 
    */
