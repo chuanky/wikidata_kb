@@ -197,15 +197,18 @@ module.exports = class Entity {
   }
 
   getSourceTag(appendSource, db_entity) {
-    var sourceTag = db_entity['sourceTag'];
+    if (!db_entity) {
+      return appendSource;
+    }
 
+    var sourceTag = db_entity['sourceTag'];
     if (sourceTag != null && sourceTag != '') {
       if (sourceTag.includes(appendSource)) return sourceTag;
       sourceTag += `, ${appendSource}`
     } else {
       sourceTag = appendSource
     }
-
+    
     while (sourceTag.length > 50) {
       var sources = sourceTag.split(',');
       sources.shift();

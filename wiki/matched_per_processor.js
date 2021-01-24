@@ -79,7 +79,7 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
     });
   }
 
-  async processNewPerson(wiki_id) {
+  async processNewPer(wiki_id) {
     let wikidata = await this.getEntity(wiki_id);
     let wiki_entity = new PersonEntity(wikidata, this.con, this.con_irica);
     this.insert(wiki_entity);
@@ -105,9 +105,9 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
    * @param {PersonEntity} wiki_entity 
    */
   update = async (wiki_entity, db_entity) => {
-    let person = await wiki_entity.getPerson();
+    let person = await wiki_entity.getPerson(db_entity);
     let sql = this.db_updater.buildUpdateSQL(db_entity['id'], person, 'person');
-    this.updateDB(sql, db_entity['id'], 'person', updateValues, this.sql_logger);
+    this.updateDB(sql, db_entity['id'], 'person', person, this.sql_logger);
     this.processed++;
   }
 
@@ -139,4 +139,4 @@ const processor = new MatchedPersonProcessor('../data/per_matched-2020-12-28.jl'
 
 // processor.processSingle('Q22686', 67083);
 // processor.processSingle('Q6279', 281595);
-processor.processNewPerson('Q6279');
+processor.processNewPer('Q6279');

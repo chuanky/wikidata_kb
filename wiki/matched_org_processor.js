@@ -59,8 +59,8 @@ class MatchedOrgProcessor extends MatchedEntityProcessor {
 
   /**
    * 访问wikidata query api，更新单个实体数据
-   * @param {String} wiki_id 实体的wikidata Id，例：'Q22686'
-   * @param {Number} db_id 实体的数据库id，例：67083
+   * @param {String} wiki_id 实体的wikidata Id，例：'Q7248756'
+   * @param {Number} db_id 实体的数据库id，例：4198
    */
   async processSingle(wiki_id, db_id) {
     let wikidata = await this.getEntity(wiki_id);
@@ -75,30 +75,35 @@ class MatchedOrgProcessor extends MatchedEntityProcessor {
     });
   }
 
+  async processNewOrg(wiki_id) {
+    let wikidata = await this.getEntity(wiki_id);
+    let wiki_entity = new OrgEntity(wikidata, this.con, this.con_irica);
+    this.insert(wiki_entity);
+  }
+
+  /**
+   * 插入实体信息到数据库
+   * @param {OrgEntity} wiki_entity 
+   */
+  insert = async (wiki_entity) => {
+    let org = await wiki_entity.getOrg();
+    let maxId = await this.db_updater.getMaxId('organization');
+    let sql = this.db_updater.buildInsertSQL(maxId + 1, org, 'organization');
+    this.db_updater.query(sql).then(response => {
+      console.log(response);
+    }).catch(error => {
+      console.log(error);
+    })
+  }
+
   /**
    * 更新实体信息到数据库
    * @param {OrgEntity} wiki_entity 
    */
   update = async (wiki_entity, db_entity) => {
-    let names = wiki_entity.getNames();
-    let countryId = await wiki_entity.getCountry('org');
-    let wikiUrls = wiki_entity.getWikiUrls();
-    let descriptions = wiki_entity.getDescriptions();
-    let longitude = wiki_entity.getLongitude();
-    let latitude = wiki_entity.getLatitude();
-    let foundingDate = wiki_entity.getFoundingDate();
-    let foundernames = await wiki_entity.getFounderNames();
-    let leaderNames = await wiki_entity.getLeaderNames();
-    let aliases = wiki_entity.getAliases();
-    let photoUrl = wiki_entity.getPhotoUrl();
-    let sourceTag = wiki_entity.getSourceTag('wikidata_2020-12-28', db_entity);
-
-    var updateValues = {...names, 'countryId': countryId, ...wikiUrls, ...descriptions, 
-                        'longitude': longitude, 'latitude': latitude, 'foundingDate': foundingDate,
-                        ...foundernames, ...leaderNames, aliases: aliases, 'photoUrl': photoUrl, 
-                        'sourceTag': sourceTag, 'updateTime': DateUtil.getUTCDateTime()}
-    let sql = this.db_updater.buildUpdateSQL(db_entity['id'], updateValues, 'organization');
-    this.updateDB(sql, db_entity['id'], 'organization', updateValues, this.sql_logger);
+    let org = await wiki_entity.getOrg(db_entity);
+    let sql = this.db_updater.buildUpdateSQL(db_entity['id'], org, 'organization');
+    this.updateDB(sql, db_entity['id'], 'organization', org, this.sql_logger);
     this.processed++;
   }
 
@@ -127,4 +132,7 @@ class MatchedOrgProcessor extends MatchedEntityProcessor {
   }
 }
 
-new MatchedOrgProcessor('E:/wikidata/org_matched-2020-12-28.jl_unique').process();
+const processor = new MatchedOrgProcessor('E:/wikidata/org_matched-2020-12-28.jl_unique')
+
+// processor.processSingle('Q7248756', 4198);
+// processor.processNewOrg('Q23548');

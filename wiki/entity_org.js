@@ -7,6 +7,27 @@ const DateUtil = require('../util/date_util')
  */
 module.exports = class OrgEntity extends Entity{
 
+  async getOrg(db_entity) {
+    let names = this.getNames();
+    let countryId = await this.getCountry('org');
+    let wikiUrls = this.getWikiUrls();
+    let descriptions = this.getDescriptions();
+    let longitude = this.getLongitude();
+    let latitude = this.getLatitude();
+    let foundingDate = this.getFoundingDate();
+    let foundernames = await this.getFounderNames();
+    let leaderNames = await this.getLeaderNames();
+    let aliases = this.getAliases();
+    let photoUrl = this.getPhotoUrl();
+    let sourceTag = this.getSourceTag(`wikidata_${DateUtil.getUTCDate()}`, db_entity);
+
+    let org = {...names, 'countryId': countryId, ...wikiUrls, ...descriptions, 
+                        'longitude': longitude, 'latitude': latitude, 'foundingDate': foundingDate,
+                        ...foundernames, ...leaderNames, aliases: aliases, 'photoUrl': photoUrl, 
+                        'sourceTag': sourceTag, 'updateTime': DateUtil.getUTCDateTime()}
+    return org
+  }
+
   getFoundingDate() {
     let result = DateUtil.getUTCDateTimeFromString(this.getFirstClaimValue('P571', 'time'));
     if (result) {
