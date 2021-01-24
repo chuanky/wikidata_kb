@@ -8,6 +8,9 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
   constructor(inputFile) {
     super(inputFile);
     this.logger = new Logger('info', 'console', `../data/matched_per_processor.log`);
+    this.sql_logger = new Logger('debug', 'file', '../data/per_sql_error.log');
+
+    this.table = 'person';
     this.result = {
       'name_en': 0, 'name_zh': 0, 'name_zf': 0, 'name_ru': 0, 'name_ja': 0,
       'countryId': 0,
@@ -24,7 +27,7 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
 
     this.db_updater = new DBUpdater();
     this.update_result = {'matched': 0, 'changed': 0, 'errors': 0};
-    this.sql_logger = new Logger('debug', 'file', '../data/per_sql_error.log')
+    
 
     this.rl.on('close', () => {
       setTimeout(() => {
@@ -64,7 +67,7 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
   async processSingle(wiki_id, db_id) {
     let wikidata = await this.getEntity(wiki_id);
     let wiki_entity = new PersonEntity(wikidata, this.con, this.con_irica);
-    this.con_irica.query(`SELECT * FROM person WHERE id=${db_id}`, (error, record)=>{
+    this.con_irica.query(`SELECT * FROM ${this.table} WHERE id=${db_id}`, (error, record)=>{
       if (error) {
         console.log(`cannot find entity with id=${db_id} in database`)
       } else {
@@ -91,8 +94,8 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
    */
   insert = async (wiki_entity) => {
     let person = await wiki_entity.getPerson();
-    let maxId = await this.db_updater.getMaxId('person');
-    let sql = this.db_updater.buildInsertSQL(maxId + 1, person, 'person');
+    let maxId = await this.db_updater.getMaxId(this.table);
+    let sql = this.db_updater.buildInsertSQL(maxId + 1, person, this.table);
     this.db_updater.query(sql).then(response => {
       console.log(response);
     }).catch(error => {
@@ -106,8 +109,8 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
    */
   update = async (wiki_entity, db_entity) => {
     let person = await wiki_entity.getPerson(db_entity);
-    let sql = this.db_updater.buildUpdateSQL(db_entity['id'], person, 'person');
-    this.updateDB(sql, db_entity['id'], 'person', person, this.sql_logger);
+    let sql = this.db_updater.buildUpdateSQL(db_entity['id'], person, this.table);
+    this.updateDB(sql, db_entity['id'], this.table, person, this.sql_logger);
     this.processed++;
   }
 
