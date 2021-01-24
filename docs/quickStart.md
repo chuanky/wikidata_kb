@@ -1,8 +1,12 @@
-## quickStart
+## QuickStart
+> 2020年1月24日
+> 施传奇
+
 #### 项目环境要求
 
 - nodejs version: 12+
 - npm version: 6+
+- irica数据库: 带有person、organization、location表
 
 #### 项目部署
 
