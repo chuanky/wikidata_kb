@@ -10,12 +10,9 @@
   "license": "ISC",
   "dependencies": {
     "emoji-strip": "^1.0.1",
-    "express": "^4.17.1",
     "md5": "^2.3.0",
     "mysql": "^2.18.1",
     "node-fetch": "^2.6.1",
-    "node-html-parser": "^2.0.0",
-    "wikidata-taxonomy": "^0.6.7",
-    "xmlhttprequest": "^1.8.0"
+    "node-html-parser": "^2.0.0"
   }
 }
