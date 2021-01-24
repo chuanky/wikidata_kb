@@ -97,7 +97,7 @@ class MatchedOrgProcessor extends MatchedEntityProcessor {
                         'longitude': longitude, 'latitude': latitude, 'foundingDate': foundingDate,
                         ...foundernames, ...leaderNames, aliases: aliases, 'photoUrl': photoUrl, 
                         'sourceTag': sourceTag, 'updateTime': DateUtil.getUTCDateTime()}
-    let sql = this.db_updater.buildUpdateValueString(db_entity['id'], updateValues, 'organization');
+    let sql = this.db_updater.buildUpdateSQL(db_entity['id'], updateValues, 'organization');
     this.updateDB(sql, db_entity['id'], 'organization', updateValues, this.sql_logger);
     this.processed++;
   }

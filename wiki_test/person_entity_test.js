@@ -22,7 +22,7 @@ const con_irica = mysql.createConnection({
 var counter = 0;
 rl.on('line', (line) => {
   counter++;
-  if (counter < 100) {
+  if (counter < 2) {
     let entity_pair = JSON.parse(line);
     let wiki_entity = new PersonEntity(entity_pair['wikidata'], con, con_irica);
     let db_entity = entity_pair['iricaDB'];
@@ -38,7 +38,8 @@ rl.on('line', (line) => {
     //   console.log(wiki_entity.getPhotoUrl());
     // });
     // console.log(wiki_entity.getBirthday());
-    wiki_entity.getCountry('per').then(country => console.log(country));
+    // wiki_entity.getCountry('per').then(country => console.log(country));
+    wiki_entity.getPerson(db_entity).then(entity => console.log(entity));
     
   } else {
     rl.close();

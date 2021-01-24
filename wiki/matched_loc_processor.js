@@ -70,7 +70,7 @@ class MatchedLocProcessor extends MatchedEntityProcessor {
                         'longitudeFloat': longitudeFloat, 'latitudeFloat': latitudeFloat,
                         'ancestorNames': ancestorNames, aliases: aliases, 'photoUrl': photoUrl, 
                         'sourceTag': sourceTag, 'updateTime': DateUtil.getUTCDateTime()}
-    let sql = this.db_updater.buildUpdateValueString(db_entity['id'], updateValues, 'location');
+    let sql = this.db_updater.buildUpdateSQL(db_entity['id'], updateValues, 'location');
     this.updateDB(sql, db_entity['id'], 'location', updateValues, this.sql_logger);
     this.processed++;
   }

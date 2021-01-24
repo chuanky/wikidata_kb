@@ -17,8 +17,13 @@ module.exports = class DBUpdater {
   async getRecordById(id, table) {
     let sql = `SELECT * FROM ${table} WHERE id=${id}`;
     let doc = await this.query(sql);
-    console.log(doc);
     return doc;
+  }
+
+  async getMaxId(table) {
+    let sql = `SELECT id FROM ${table} ORDER BY id DESC LIMIT 1`;
+    let record = await this.query(sql);
+    return record[0]['id'];
   }
 
   /**
@@ -27,7 +32,7 @@ module.exports = class DBUpdater {
    * @param {String} table 数据库表名
    */
   async updateFields(id, field_value_pairs, table) {
-    let sql = this.buildUpdateValueString(id, field_value_pairs, table);
+    let sql = this.buildUpdateSQL(id, field_value_pairs, table);
     return this.query(sql);
   }
 
@@ -36,7 +41,7 @@ module.exports = class DBUpdater {
    * @param {Any} field_value_pairs {'fieldName1': value1, 'fieldName2': value2 }
    * @param {String} table 数据库表名
    */
-  buildUpdateValueString(id, field_value_pairs, table) {
+  buildUpdateSQL(id, field_value_pairs, table) {
     if (Object.keys(field_value_pairs).length < 1) return null;
 
     var set_values = '';
@@ -53,6 +58,28 @@ module.exports = class DBUpdater {
     }
 
     return `UPDATE ${table} SET ${set_values.slice(0, -2)} WHERE id=${id}`;
+  }
+
+  buildInsertSQL(id, field_value_pairs, table) {
+    if (Object.keys(field_value_pairs).length < 1) return null;
+    var fields = '(id, '
+    var values = `(${id}, `
+    for (let field of Object.keys(field_value_pairs)) {
+      let value = field_value_pairs[field];
+      if (value) {
+        fields += `${field}, `;
+        if (typeof value === "string") {
+          value = value.replace(/'/g, "''");
+          values += `'${value}', `;
+        } else {
+          values += `${value}, `
+        }
+      }
+    }
+    fields = fields.slice(0, -2) + ')';
+    values = values.slice(0, -2) + ')';
+
+    return `INSERT INTO ${table} ${fields} VALUES ${values}`;
   }
 
   query(sql) {
@@ -100,7 +127,7 @@ module.exports = class DBUpdater {
       var field = this.getColumn(error['sqlMessage']);
       if (field.includes("wpurl")) field = field.replace('url', 'Url');
       updateValues[field] = encodeURI(updateValues[field])
-      let modifiedSql = this.buildUpdateValueString(id, updateValues, table);
+      let modifiedSql = this.buildUpdateSQL(id, updateValues, table);
       this.query(modifiedSql).catch(e => {
         this.handleIncorrectStringError(e, updateValues, id, table)
       });

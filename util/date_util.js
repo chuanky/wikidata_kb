@@ -7,6 +7,10 @@ module.exports = class DateUtil {
     return new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
   }
 
+  static getUTCDate() {
+    return new Date().toISOString().slice(0, 10)
+  }
+
   static getUTCDateTimeFromString(time) {
     if (!time) return null;
     

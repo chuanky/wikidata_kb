@@ -65,7 +65,9 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
     let wikidata = await this.getEntity(wiki_id);
     let wiki_entity = new PersonEntity(wikidata, this.con, this.con_irica);
     this.con_irica.query(`SELECT * FROM person WHERE id=${db_id}`, (error, record)=>{
-      if (!error) {
+      if (error) {
+        console.log(`cannot find entity with id=${db_id} in database`)
+      } else {
         let db_entity = record[0];
         this.update(wiki_entity, db_entity);
         console.log('update finished');
@@ -77,28 +79,34 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
     });
   }
 
+  async processNewPerson(wiki_id) {
+    let wikidata = await this.getEntity(wiki_id);
+    let wiki_entity = new PersonEntity(wikidata, this.con, this.con_irica);
+    this.insert(wiki_entity);
+  }
+
+  /**
+   * 插入实体信息到数据库
+   * @param {PersonEntity} wiki_entity 
+   */
+  insert = async (wiki_entity) => {
+    let person = await wiki_entity.getPerson();
+    let maxId = await this.db_updater.getMaxId('person');
+    let sql = this.db_updater.buildInsertSQL(maxId + 1, person, 'person');
+    this.db_updater.query(sql).then(response => {
+      console.log(response);
+    }).catch(error => {
+      console.log(error);
+    })
+  }
+
   /**
    * 更新实体信息到数据库
    * @param {PersonEntity} wiki_entity 
    */
   update = async (wiki_entity, db_entity) => {
-    let names = wiki_entity.getNames();
-    let countryId = await wiki_entity.getCountry('per');
-    let job = await wiki_entity.getJob();
-    let birthday = wiki_entity.getBirthday();
-    let photoUrl = wiki_entity.getPhotoUrl();
-    let wikiUrls = wiki_entity.getWikiUrls();
-    let party = await wiki_entity.getParty();
-    let descriptions = wiki_entity.getDescriptions();
-    let aliases = wiki_entity.getAliases();
-    let sourceTag = wiki_entity.getSourceTag('wikidata_2021-01-21', db_entity);
-
-    var updateValues = {...names, 'countryId': countryId, ...job, 'birthday': birthday, 
-                        'photoUrl': encodeURI(photoUrl), ...wikiUrls, 'partyName': party,  
-                        ...descriptions, 'aliases': aliases,
-                        'sourceTag': sourceTag, 'updateTime': DateUtil.getUTCDateTime()
-                       }
-    let sql = this.db_updater.buildUpdateValueString(db_entity['id'], updateValues, 'person');
+    let person = await wiki_entity.getPerson();
+    let sql = this.db_updater.buildUpdateSQL(db_entity['id'], person, 'person');
     this.updateDB(sql, db_entity['id'], 'person', updateValues, this.sql_logger);
     this.processed++;
   }
@@ -130,4 +138,5 @@ class MatchedPersonProcessor extends MatchedEntityProcessor {
 const processor = new MatchedPersonProcessor('../data/per_matched-2020-12-28.jl');
 
 // processor.processSingle('Q22686', 67083);
-processor.processSingle('Q6279', 281595);
+// processor.processSingle('Q6279', 281595);
+processor.processNewPerson('Q6279');

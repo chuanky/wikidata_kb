@@ -59,4 +59,31 @@ module.exports = class PersonEntity extends Entity {
       });
     });
   }
+
+  async getPerson(db_entity) {
+    let names = this.getNames();
+    let countryId = await this.getCountry('per');
+    let job = await this.getJob();
+    let birthday = this.getBirthday();
+    let photoUrl = this.getPhotoUrl();
+    let wikiUrls = this.getWikiUrls();
+    let party = await this.getParty();
+    let descriptions = this.getDescriptions();
+    let aliases = this.getAliases();
+
+    var sourceTag = '';
+    let currentSource = `wikidata_${DateUtil.getUTCDate()}`
+    if (db_entity) {
+      sourceTag = this.getSourceTag(currentSource, db_entity);
+    } else {
+      sourceTag = currentSource;
+    }
+
+    let person = {...names, 'countryId': countryId, ...job, 'birthday': birthday, 
+                        'photoUrl': encodeURI(photoUrl), ...wikiUrls, 'partyName': party,  
+                        ...descriptions, 'aliases': aliases,
+                        'sourceTag': sourceTag, 'updateTime': DateUtil.getUTCDateTime()
+                  }
+    return person
+  }
 }
