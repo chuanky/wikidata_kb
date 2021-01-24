@@ -1,5 +1,5 @@
 ## QuickStart
-> 2020年1月24日
+> 2020年1月26日
 > 施传奇
 
 #### 项目环境要求
@@ -10,8 +10,10 @@
 
 #### 项目部署
 
-1. 使用终端进入项目根目录
-2. 执行终端命令：npm install
+1. 打开终端，进入需要保存项目代码文件夹
+2. 执行终端命令：git clone https://github.com/chuanky/nodejs.git
+3. 进入项目根目录：cd nodejs
+4. 安装项目依赖包：npm install
 
 #### 项目使用流程
 
