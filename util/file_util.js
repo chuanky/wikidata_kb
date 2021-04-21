@@ -1,5 +1,6 @@
 const parser = require("node-html-parser");
 const fs = require("fs");
+const readline = require('readline')
 const { StringDecoder } = require('string_decoder');
 const decoder = new StringDecoder('utf8');
 
@@ -38,5 +39,26 @@ module.exports = class FileUtil {
         console.log(err);
       }
     });
+  }
+
+  countLines(filePath) {
+    const rl = readline.createInterface({
+      input: fs.createReadStream(filePath)
+    })
+
+    var entityNum = 0;
+
+    rl.on('line', (line) => {
+      try {
+        JSON.parse(line)
+        entityNum++;
+      } catch(e) {
+        console.log(e)
+      }
+    })
+
+    rl.on('close', () => {
+      console.log(`${filePath} has ${entityNum} entities`);
+    })
   }
 };
