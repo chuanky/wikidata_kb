@@ -142,4 +142,8 @@ const processor = new MatchedPersonProcessor('../data/per_matched-2020-12-28.jl'
 
 // processor.processSingle('Q22686', 67083);
 // processor.processSingle('Q6279', 281595);
-processor.processNewPer('Q6279');
+processor.processNewPer('Q337507');
+// processor.processNewPer('Q128573');
+// processor.processNewPer('Q188095');
+// processor.processNewPer('Q11572647');
+// processor.processNewPer('Q17198778');
